@@ -1,25 +1,28 @@
+"use client"
+
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 config.autoAddCss = false;
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import styles from "@/styles/Navbar.module.css";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import styles from "@/../styles/Navbar.module.css";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 
 const Navbar = () => {
-  const router = useRouter();
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
 
-  const searchHandler = () => {
-    if (search.trim()) {
-      router.push(`/search?q=${search}`);
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  const handleSearch = (term: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set("query", term);
+    } else {
+      params.delete("query");
     }
+    replace(`${pathname}?${params.toString()}`);
   };
-
-  useEffect(() => {
-    setSearch(router.query.q);
-  }, []);
 
   return (
     <nav className={styles.navbar}>
@@ -27,10 +30,12 @@ const Navbar = () => {
         <input
           type="text"
           placeholder="جستجو کنید...."
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          defaultValue={searchParams.get('query')?.toString()}
+          onChange={(e) => {
+            handleSearch(e.target.value);
+          }}
         />
-        <span className={styles.navbar_search_icon} onClick={searchHandler}>
+        <span className={styles.navbar_search_icon}>
           <FontAwesomeIcon icon={faSearch} />
         </span>
       </div>
